@@ -148,10 +148,6 @@ class Deploy {
           exec('cd ' . $this->_git_dir . ' && ' . $git_bin_path . ' fetch', $output);
           $this->log('Pulling in changes... '.implode(' ', $output));
 
-          // Secure the .git directory
-          exec('cd ' . $this->_git_dir . ' && chmod -R og-rx .git');
-          $this->log('Securing .git directory... ');
-
 		  exec('cd ' . $this->_git_dir . ' && GIT_WORK_TREE=' . $this->_www_dir . ' ' . $git_bin_path  . ' checkout -f');
 
           if (is_callable($this->post_deploy))
