@@ -65,20 +65,6 @@ class Deploy {
   private $_date_format = 'Y-m-d H:i:sP';
 
   /**
-  * The name of the branch to pull from.
-  * 
-  * @var string
-  */
-  private $_branch = 'master';
-
-  /**
-  * The name of the remote to pull from.
-  * 
-  * @var string
-  */
-  private $_remote = 'origin';
-
-  /**
   * The path to git
   * 
   * @var string
@@ -106,7 +92,7 @@ class Deploy {
       $this->_git_dir = realpath($git_dir).DIRECTORY_SEPARATOR;
       $this->_www_dir = realpath($www_dir).DIRECTORY_SEPARATOR;
 
-      $available_options = array('log', 'date_format', 'branch', 'remote', 'git_bin_path');
+      $available_options = array('log', 'date_format', 'git_bin_path');
 
       foreach ($options as $option => $value)
       {
@@ -159,7 +145,7 @@ class Deploy {
           $this->log('Reseting repository... '.implode(' ', $output));
 
           // Update the local repository
-          exec('cd ' . $this->_git_dir . ' && ' . $git_bin_path . ' fetch ', $output);
+          exec('cd ' . $this->_git_dir . ' && ' . $git_bin_path . ' fetch', $output);
           $this->log('Pulling in changes... '.implode(' ', $output));
 
           // Secure the .git directory
