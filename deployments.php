@@ -3,22 +3,26 @@
  *	GitHub & Bitbucket Deployment Sample Script
  *	Originally found at
  *	http://brandonsummers.name/blog/2012/02/10/using-bitbucket-for-automated-deployments/
- *  http://jonathannicol.com/blog/2013/11/19/automated-git-deployments-from-bitbucket/
+ *	http://jonathannicol.com/blog/2013/11/19/automated-git-deployments-from-bitbucket/
  *  
- *  We assume you did a 'git clone -mirror' to your locao repo directory,
- *  And then, 'GIT_WORK_TREE=[www directory] git checkout -f [your desired branch]'  
+ *	We assume you did a 'git clone -mirror' to your locao repo directory,
+ *	And then, 'GIT_WORK_TREE=[www directory] git checkout -f [your desired branch]'  
  *  
   */
 
 /**
 * The Full Server Path to git repository and web location.
 * Can be either relative or absolute path
+* 
+* @var string
 */
 $git_serverpath = '/path/to/git/repo';
 $www_serverpath = '/path/to/git/www';
 
 /**
-* The Secret Key
+* The Secret Key so that it's a bit more secure to run this script
+* 
+* @var string
 */
 $secret_key = 'EnterYourSecretKeyHere';
 
