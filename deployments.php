@@ -5,7 +5,7 @@
  *	http://brandonsummers.name/blog/2012/02/10/using-bitbucket-for-automated-deployments/
  *	http://jonathannicol.com/blog/2013/11/19/automated-git-deployments-from-bitbucket/
  *  
- *	We assume you did a 'git clone -mirror' to your locao repo directory,
+ *	We assume you did a 'git clone -mirror' to your local repo directory,
  *	And then, 'GIT_WORK_TREE=[www directory] git checkout -f [your desired branch]'  
  *  
   */
