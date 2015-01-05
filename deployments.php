@@ -17,7 +17,7 @@
 * @var string
 */
 $git_serverpath = '/path/to/git/repo';
-$www_serverpath = '/path/to/git/www';
+$www_serverpath = '/path/to/www';
 
 /**
 * The Secret Key so that it's a bit more secure to run this script
