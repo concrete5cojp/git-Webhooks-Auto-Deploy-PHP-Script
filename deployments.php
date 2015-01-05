@@ -3,13 +3,19 @@
  *	GitHub & Bitbucket Deployment Sample Script
  *	Originally found at
  *	http://brandonsummers.name/blog/2012/02/10/using-bitbucket-for-automated-deployments/
- *
- */
+ *  http://jonathannicol.com/blog/2013/11/19/automated-git-deployments-from-bitbucket/
+ *  
+ *  We assume you did a 'git clone -mirror' to your locao repo directory,
+ *  And then, 'GIT_WORK_TREE=[www directory] git checkout -f [your desired branch]'  
+ *  
+  */
 
 /**
-* The Server Path to git repository
+* The Full Server Path to git repository and web location.
+* Can be either relative or absolute path
 */
-$serverpath = '/path/to/git/repo';
+$git_serverpath = '/path/to/git/repo';
+$www_serverpath = '/path/to/git/www';
 
 /**
 * The Secret Key
@@ -25,11 +31,13 @@ $secret_key = 'EnterYourSecretKeyHere';
  *        (https access & Basic Auth makes it a bit more secure if your server supports it)
  */
 
+
 /**
 * The TimeZone format used for logging.
 * @link    http://php.net/manual/en/timezones.php
 */
 date_default_timezone_set('Asia/Tokyo');
+
 
 class Deploy {
 
@@ -71,12 +79,20 @@ class Deploy {
   private $_remote = 'origin';
 
   /**
-  * The directory where your website and git repository are located, can be 
-  * a relative or absolute path
+  * The path to git
   * 
   * @var string
   */
-  private $_directory;
+  private $_git_bin_path = 'git';
+
+  /**
+  * The directory where your website and git repository are located,
+  * can be relative or absolute path
+  * 
+  * @var string
+  */
+  private $_git_dir;
+  private $_www_dir;
 
   /**
   * Sets up defaults.
@@ -84,12 +100,13 @@ class Deploy {
   * @param  string  $directory  Directory where your website is located
   * @param  array   $data       Information about the deployment
   */
-  public function __construct($directory, $options = array())
+  public function __construct($git_dir, $www_dir, $options = array())
   {
       // Determine the directory path
-      $this->_directory = realpath($directory).DIRECTORY_SEPARATOR;
+      $this->_git_dir = realpath($git_dir).DIRECTORY_SEPARATOR;
+      $this->_www_dir = realpath($www_dir).DIRECTORY_SEPARATOR;
 
-      $available_options = array('log', 'date_format', 'branch', 'remote');
+      $available_options = array('log', 'date_format', 'branch', 'remote', 'git_bin_path');
 
       foreach ($options as $option => $value)
       {
@@ -137,21 +154,19 @@ class Deploy {
   {
       try
       {
-          // Make sure we're in the right directory
-          chdir($this->_directory);
-          $this->log('Changing working directory... ');
-
           // Discard any changes to tracked files since our last deploy
-          exec('git reset --hard HEAD', $output);
+          exec('cd ' . $this->_git_dir . ' && ' . $git_bin_path . ' reset --hard HEAD', $output);
           $this->log('Reseting repository... '.implode(' ', $output));
 
           // Update the local repository
-          exec('git pull '.$this->_remote.' '.$this->_branch, $output);
+          exec('cd ' . $this->_git_dir . ' && ' . $git_bin_path . ' fetch ', $output);
           $this->log('Pulling in changes... '.implode(' ', $output));
 
           // Secure the .git directory
-          exec('chmod -R og-rx .git');
+          exec('cd ' . $this->_git_dir . ' && chmod -R og-rx .git');
           $this->log('Securing .git directory... ');
+
+		  exec('cd ' . $this->_git_dir . ' && GIT_WORK_TREE=' . $this->_www_dir . ' ' . $git_bin_path  . ' checkout -f');
 
           if (is_callable($this->post_deploy))
           {
@@ -168,7 +183,7 @@ class Deploy {
 
 }
 
-$deploy = new Deploy($serverpath);
+$deploy = new Deploy($git_serverpath, $www_serverpath);
 
 /*
 $deploy->post_deploy = function() use ($deploy) {
