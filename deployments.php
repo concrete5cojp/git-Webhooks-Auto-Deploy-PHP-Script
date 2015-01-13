@@ -145,11 +145,11 @@ class Deploy {
       try
       {
           // Update the local repository
-          exec('cd ' . $this->_git_dir . ' && ' . $git_bin_path . ' fetch', $output);
+          exec('cd ' . $this->_git_dir . ' && ' . $this->_git_bin_path . ' fetch', $output);
           $this->log('Fetching changes... '.implode(' ', $output));
 
-         // Checking out to web directory
-		  exec('cd ' . $this->_git_dir . ' && GIT_WORK_TREE=' . $this->_www_dir . ' ' . $git_bin_path  . ' checkout -f');
+          // Checking out to web directory
+		  exec('cd ' . $this->_git_dir . ' && GIT_WORK_TREE=' . $this->_www_dir . ' ' . $this->_git_bin_path  . ' checkout -f', $output);
           $this->log('Checking out changes to www directory... '.implode(' ', $output));
 
           if (is_callable($this->post_deploy))
