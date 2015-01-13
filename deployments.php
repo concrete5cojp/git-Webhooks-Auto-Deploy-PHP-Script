@@ -144,15 +144,13 @@ class Deploy {
   {
       try
       {
-          // Discard any changes to tracked files since our last deploy
-          exec('cd ' . $this->_git_dir . ' && ' . $git_bin_path . ' reset --hard HEAD', $output);
-          $this->log('Reseting repository... '.implode(' ', $output));
-
           // Update the local repository
           exec('cd ' . $this->_git_dir . ' && ' . $git_bin_path . ' fetch', $output);
-          $this->log('Pulling in changes... '.implode(' ', $output));
+          $this->log('Fetching changes... '.implode(' ', $output));
 
+         // Checking out to web directory
 		  exec('cd ' . $this->_git_dir . ' && GIT_WORK_TREE=' . $this->_www_dir . ' ' . $git_bin_path  . ' checkout -f');
+          $this->log('Checking out changes to www directory... '.implode(' ', $output));
 
           if (is_callable($this->post_deploy))
           {
