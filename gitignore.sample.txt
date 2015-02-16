@@ -5,7 +5,7 @@
 # rename this file to '.gitignore' when you actually use it
 # 使用の際はファイル名を[.gitignore]に変更してください
 #
- 
+
 # ignore system files
 .DS_Store
 thumbs.db
@@ -17,22 +17,48 @@ error_log
 .htaccess
 .ftpquota
 
-#ignore everything but the index.html
+# concrete5 core
+/concrete
+
+# concrete5 Config sites
 /application/config/database.php
-/application/files/*
-!/application/files/.gitkeep
-!/application/files/.gitignore
 /config/site.php
+
+# concrete5 sitemap.xml
+sitemap.xml
+
+#concrete5 uploaded images and cache
 /files/*
 !/files/index.html
 !/files/.gitkeep
 !/files/.gitignore
+/application/files/*
+!/application/files/index.html
+!/application/files/.gitkeep
+!/application/files/.gitignore
+
+# WordPress core files
+/wp-admin
+/wp-includes
+wp-activate.php
+wp-blog-header.php
+wp-comments-post.php
+wp-config-sample.php
+wp-config.php
+wp-cron.php
+wp-links-opml.php
+wp-load.php
+wp-login.php
+wp-mail.php
+wp-settings.php
+wp-signup.php
+wp-trackback.php
+xmlrpc.php
+
+# WordPress images
 /wp-content/blogs.dir/*
 /wp-content/cache/*
 /wp-content/uploads/*
-
-# ignore sitemap.xml
-sitemap.xml
 
 # Ignore hook log
 deployments.php
