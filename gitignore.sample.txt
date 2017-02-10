@@ -22,6 +22,8 @@ error_log
 /application/files/*
 !/application/files/.gitkeep
 !/application/files/.gitignore
+/application/config/doctrine/*
+/application/config/generated_overrides/*
 /config/site.php
 /files/*
 !/files/index.html
