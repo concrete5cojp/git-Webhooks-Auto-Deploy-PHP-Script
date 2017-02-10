@@ -178,7 +178,7 @@ $deploy->post_deploy = function() use ($deploy) {
 };
 */
 
-if ($_GET[key] === $secret_key)  {
+if ($_GET['key'] === $secret_key)  {
 	$deploy->execute();
 }
 ?>
