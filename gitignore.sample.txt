@@ -22,6 +22,8 @@ error_log
 
 # concrete5 Config sites
 /application/config/database.php
+/application/config/doctrine/*
+/application/config/generated_overrides/*
 /config/site.php
 
 # concrete5 sitemap.xml
