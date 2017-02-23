@@ -71,6 +71,13 @@ class Deploy {
   private $_remote = 'origin';
 
   /**
+  * If the git contains submodule and want this git auto deploy to sync submodule at the same time.
+  * 
+  * @var boolean
+  */
+  private $_syncSubmodule = false;
+
+  /**
   * The directory where your website and git repository are located, can be 
   * a relative or absolute path
   * 
@@ -148,6 +155,12 @@ class Deploy {
           // Update the local repository
           exec('git pull '.$this->_remote.' '.$this->_branch, $output);
           $this->log('Pulling in changes... '.implode(' ', $output));
+
+          if ($this->_syncSubmodule) {
+            // Update the submodule
+            exec('git submodule update --init --recursive --remote', $output);
+            $this->log('Updating submodules...'.implode(' ', $output));
+          }
 
           // Secure the .git directory
           exec('chmod -R og-rx .git');
