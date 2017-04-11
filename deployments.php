@@ -144,22 +144,42 @@ class Deploy {
   {
       try
       {
+          // Git Submodule - Measure the execution time
+          $strtedAt = microtime(true);
           // Make sure we're in the right directory
           chdir($this->_directory);
           $this->log('Changing working directory... ');
 
           // Discard any changes to tracked files since our last deploy
           exec('git reset --hard HEAD', $output);
-          $this->log('Reseting repository... '.implode(' ', $output));
+          if (is_array($output)) {
+              $output = implode(' ', $output);
+          }
+          $this->log('Reseting repository... '.$output);
 
           // Update the local repository
+          $output = '';
           exec('git pull '.$this->_remote.' '.$this->_branch, $output);
-          $this->log('Pulling in changes... '.implode(' ', $output));
+          if (is_array($output)) {
+              $output = implode(' ', $output);
+          }
+          $this->log('Pulling in changes... '.$output);
 
           if ($this->_syncSubmodule) {
+            // Wait 2 seconds if main git pull takes less than 2 seconds.
+            $endedAt = microtime(true);
+            $mDuration = $endedAt - $strtedAt;
+            if ($mDuration < 2) {
+                $this->log('Waiting for 2 seconds to execute git submodule update.');
+                sleep(2);
+            }
             // Update the submodule
+            $output = '';
             exec('git submodule update --init --recursive --remote', $output);
-            $this->log('Updating submodules...'.implode(' ', $output));
+            if (is_array($output)) {
+                $output = implode(' ', $output);
+            }
+            $this->log('Updating submodules...'.$output);
           }
 
           // Secure the .git directory
