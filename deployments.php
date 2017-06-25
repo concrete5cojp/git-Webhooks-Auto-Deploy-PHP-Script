@@ -142,7 +142,8 @@ class Deploy {
         }
     
         $this->log('Attempting deployment...');
-        $this->log('Directory:' . $this->_directory);
+        $this->log('Git Directory:' . $this->_directory);
+        $this->log('Work Directory:' . $this->_workdirectory);
     }
 
     /**
