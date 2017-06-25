@@ -16,20 +16,42 @@
  */
 
 /**
-* The Server Path to git repository
+* The TimeZone format used for logging.
+* @var Timezone
+* @link    http://php.net/manual/en/timezones.php
 */
-$serverpath = '/path/to/git/repo';
+date_default_timezone_set('Asia/Tokyo');
 
 /**
 * The Secret Key
+* @var string
 */
 $secret_key = 'EnterYourSecretKeyHere';
 
 /**
-* The TimeZone format used for logging.
-* @link    http://php.net/manual/en/timezones.php
+* The Options Example
+* @var array
 */
-date_default_timezone_set('Asia/Tokyo');
+$options = array(
+    'directory'     => '/path/to/git/repo',
+    'log'           => 'deploy_log_filename.log',
+    'branch'        => 'master',
+    'remote'        => 'origin',
+    'date_format'   => 'Y-m-d H:i:sP',
+    'syncSubmodule' => false,
+)
+
+if ($_GET['key'] === $secret_key)  {
+    $deploy = new Deploy($options);
+	$deploy->execute();
+    /*
+    $deploy->post_deploy = function() use ($deploy) {
+      // hit the wp-admin page to update any db changes
+       exec('curl http://example.com/wp-admin/upgrade.php?step=upgrade_db');
+       $deploy->log('Updating wordpress database... ');
+    };
+    */
+}
 
 class Deploy {
 
@@ -39,7 +61,7 @@ class Deploy {
     * 
     * @var string
     */
-    private $_log = 'deployments.log';
+    private $_log = 'deploy.log';
     
     /**
     * The timestamp format used for logging.
@@ -91,16 +113,18 @@ class Deploy {
     * @param  string  $directory  Directory where your website is located
     * @param  array   $options    Options for default settings
     */
-    public function __construct($directory, $options = array())
+    public function __construct($options = array())
     {
-        // Determine the directory path
-        $this->_directory = realpath($directory).DIRECTORY_SEPARATOR;
     
-        $available_options = array('log', 'date_format', 'branch', 'remote');
+        $available_options = array('directory', 'log', 'date_format', 'branch', 'remote', 'syncSubmodule');
     
         foreach ($options as $option => $value){
             if (in_array($option, $available_options)) {
                 $this->{'_'.$option} = $value;
+                if ($option == 'directory') {
+                    // Determine the directory path
+                    $this->_directory = realpath($value).DIRECTORY_SEPARATOR;
+                }
             }
         }
     
@@ -141,8 +165,7 @@ class Deploy {
     */
     public function execute()
     {
-        try
-        {
+        try {
             // Git Submodule - Measure the execution time
             $strtedAt = microtime(true);
             
@@ -188,25 +211,9 @@ class Deploy {
             
             $this->log('Deployment successful.');
         }
-            catch (Exception $e)
-        {
+        catch (Exception $e) {
             $this->log($e, 'ERROR');
         }
     }
     
 }
-
-$deploy = new Deploy($serverpath);
-
-/*
-$deploy->post_deploy = function() use ($deploy) {
-  // hit the wp-admin page to update any db changes
-   exec('curl http://example.com/wp-admin/upgrade.php?step=upgrade_db');
-   $deploy->log('Updating wordpress database... ');
-};
-*/
-
-if ($_GET['key'] === $secret_key)  {
-	$deploy->execute();
-}
-?>
