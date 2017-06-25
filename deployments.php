@@ -29,11 +29,13 @@ date_default_timezone_set('Asia/Tokyo');
 $secret_key = 'EnterYourSecretKeyHere';
 
 /**
-* The Options Example
+* The Options
+* Only 'directory' is required.
 * @var array
 */
 $options = array(
     'directory'     => '/path/to/git/repo',
+    'work_dir'      => '/path/to/work/dir',
     'log'           => 'deploy_log_filename.log',
     'branch'        => 'master',
     'remote'        => 'origin',
@@ -100,12 +102,20 @@ class Deploy {
     public $post_deploy;
     
     /**
-    * The directory where your website and git repository are located, can be 
-    * a relative or absolute path
+    * The directory where your git repository is located, can be 
+    * a relative or absolute path from this PHP script on server.
     * 
     * @var string
     */
     private $_directory;
+
+    /**
+    * The directory where your git work directory is located, can be 
+    * a relative or absolute path from this PHP script on server.
+    * 
+    * @var string
+    */
+    private $_workdirectory;
 
     /**
     * Sets up defaults.
@@ -116,16 +126,19 @@ class Deploy {
     public function __construct($options = array())
     {
     
-        $available_options = array('directory', 'log', 'date_format', 'branch', 'remote', 'syncSubmodule');
+        $available_options = array('directory', 'work_dir', 'log', 'date_format', 'branch', 'remote', 'syncSubmodule');
     
         foreach ($options as $option => $value){
             if (in_array($option, $available_options)) {
                 $this->{'_'.$option} = $value;
-                if ($option == 'directory') {
+                if ($option == 'directory' || $option == 'work_dir') {
                     // Determine the directory path
-                    $this->_directory = realpath($value).DIRECTORY_SEPARATOR;
+                    $this->{'_'.$option} = realpath($value).DIRECTORY_SEPARATOR;
                 }
             }
+        }
+        if (empty($_workdirectory)){
+            $_workdirectory = $_directory;
         }
     
         $this->log('Attempting deployment...');
@@ -140,13 +153,11 @@ class Deploy {
     */
     public function log($message, $type = 'INFO')
     {
-        if ($this->_log)
-        {
+        if ($this->_log) {
             // Set the name of the log file
             $filename = $this->_log;
     
-            if ( ! file_exists($filename))
-            {
+            if ( ! file_exists($filename)) {
                 // Create the log file
                 file_put_contents($filename, '');
     
@@ -170,7 +181,7 @@ class Deploy {
             $strtedAt = microtime(true);
             
             // Discard any changes to tracked files since our last deploy
-            exec('git --git-dir='.$this->_directory.'/.git --work-tree='.$this->_directory . ' reset --hard HEAD', $output);
+            exec('git --git-dir='.$this->_directory.'/.git --work-tree='.$this->_workdirectory . ' reset --hard HEAD', $output);
             if (is_array($output)) {
                 $output = implode(' ', $output);
             }
@@ -178,7 +189,7 @@ class Deploy {
             
             // Update the local repository
             $output = '';
-            exec('git --git-dir='.$this->_directory.'/.git --work-tree='.$this->_directory . ' pull', $output);
+            exec('git --git-dir='.$this->_directory.'/.git --work-tree='.$this->_workdirectory . ' pull', $output);
             if (is_array($output)) {
                 $output = implode(' ', $output);
             }
@@ -194,7 +205,7 @@ class Deploy {
             }
             // Update the submodule
             $output = '';
-            exec('git --git-dir='.$this->_directory.'/.git --work-tree='.$this->_directory . ' submodule update --init --recursive --remote', $output);
+            exec('git --git-dir='.$this->_directory.'/.git --work-tree='.$this->_workdirectory . ' submodule update --init --recursive --remote', $output);
             if (is_array($output)) {
                 $output = implode(' ', $output);
             }
