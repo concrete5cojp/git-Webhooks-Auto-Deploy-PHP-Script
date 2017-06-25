@@ -114,23 +114,27 @@ class Deploy {
     * 
     * @param  array   $option       Information about the deployment
     */
-    public function __construct($git_dir, $www_dir, $options = array())
+    public function __construct($options = array())
     {
-        // Determine the directory path
-        $this->_git_dir = realpath($git_dir).DIRECTORY_SEPARATOR;
-        $this->_www_dir = realpath($www_dir).DIRECTORY_SEPARATOR;
 
-        $available_options = array('log', 'date_format', 'git_bin_path');
-
-        foreach ($options as $option => $value)
-        {
-            if (in_array($option, $available_options))
-            {
+        $available_options = array('directory', 'work_dir', 'log', 'date_format', 'branch', 'remote', 'syncSubmodule, git_bin_path');
+    
+        foreach ($options as $option => $value){
+            if (in_array($option, $available_options)) {
                 $this->{'_'.$option} = $value;
+                if ($option == 'directory' || $option == 'work_dir') {
+                    // Determine the directory path
+                    $this->{'_'.$option} = realpath($value).DIRECTORY_SEPARATOR;
+                }
             }
         }
-
+        if (empty($this->_workdirectory)){
+            $this->_workdirectory = $this->_directory;
+        }
+    
         $this->log('Attempting deployment...');
+        $this->log('Git Directory:' . $this->_directory);
+        $this->log('Work Directory:' . $this->_workdirectory);
     }
 
   /**
