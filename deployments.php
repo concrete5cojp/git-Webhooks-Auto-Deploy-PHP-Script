@@ -226,5 +226,4 @@ class Deploy {
             $this->log($e, 'ERROR');
         }
     }
-    
 }
