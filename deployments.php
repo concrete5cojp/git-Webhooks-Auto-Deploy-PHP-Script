@@ -46,6 +46,7 @@ $options = array(
     'remote'        => 'origin',
     'date_format'   => 'Y-m-d H:i:sP',
     'syncSubmodule' => false,
+    'git_bin_path'  => 'git',
 )
 
 if ($_GET['key'] === $secret_key)  {
@@ -62,69 +63,75 @@ if ($_GET['key'] === $secret_key)  {
 
 class Deploy {
 
-  /**
-  * A callback function to call after the deploy has finished.
-  * 
-  * @var callback
-  */
-  public $post_deploy;
-  
-  /**
-  * The name of the file that will be used for logging deployments. Set to 
-  * FALSE to disable logging.
-  * 
-  * @var string
-  */
-  private $_log = 'deployments.log';
+    /**
+    * A callback function to call after the deploy has finished.
+    * 
+    * @var callback
+    */
+    public $post_deploy;
+    
+    /**
+    * The name of the file that will be used for logging deployments. Set to 
+    * FALSE to disable logging.
+    * 
+    * @var string
+    */
+    private $_log = 'deploy.log';
+    
+    /**
+    * The timestamp format used for logging.
+    * 
+    * @link    http://www.php.net/manual/en/function.date.php
+    * @var     string
+    */
+    private $_date_format = 'Y-m-d H:i:sP';
+    
+    /**
+    * The path to git
+    * 
+    * @var string
+    */
+    private $_git_bin_path = 'git';
 
-  /**
-  * The timestamp format used for logging.
-  * 
-  * @link    http://www.php.net/manual/en/function.date.php
-  * @var     string
-  */
-  private $_date_format = 'Y-m-d H:i:sP';
+    /**
+    * The directory where your git repository is located, can be 
+    * a relative or absolute path from this PHP script on server.
+    * 
+    * @var string
+    */
+    private $_directory;
 
-  /**
-  * The path to git
-  * 
-  * @var string
-  */
-  private $_git_bin_path = 'git';
+    /**
+    * The directory where your git work directory is located, can be 
+    * a relative or absolute path from this PHP script on server.
+    * 
+    * @var string
+    */
+    private $_workdirectory;
 
-  /**
-  * The directory where your website and git repository are located,
-  * can be relative or absolute path
-  * 
-  * @var string
-  */
-  private $_git_dir;
-  private $_www_dir;
+    /**
+    * Sets up defaults.
+    * 
+    * @param  array   $option       Information about the deployment
+    */
+    public function __construct($git_dir, $www_dir, $options = array())
+    {
+        // Determine the directory path
+        $this->_git_dir = realpath($git_dir).DIRECTORY_SEPARATOR;
+        $this->_www_dir = realpath($www_dir).DIRECTORY_SEPARATOR;
 
-  /**
-  * Sets up defaults.
-  * 
-  * @param  string  $directory  Directory where your website is located
-  * @param  array   $data       Information about the deployment
-  */
-  public function __construct($git_dir, $www_dir, $options = array())
-  {
-      // Determine the directory path
-      $this->_git_dir = realpath($git_dir).DIRECTORY_SEPARATOR;
-      $this->_www_dir = realpath($www_dir).DIRECTORY_SEPARATOR;
+        $available_options = array('log', 'date_format', 'git_bin_path');
 
-      $available_options = array('log', 'date_format', 'git_bin_path');
+        foreach ($options as $option => $value)
+        {
+            if (in_array($option, $available_options))
+            {
+                $this->{'_'.$option} = $value;
+            }
+        }
 
-      foreach ($options as $option => $value)
-      {
-          if (in_array($option, $available_options))
-          {
-              $this->{'_'.$option} = $value;
-          }
-      }
-
-      $this->log('Attempting deployment...');
-  }
+        $this->log('Attempting deployment...');
+    }
 
   /**
   * Writes a message to the log file.
