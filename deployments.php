@@ -128,7 +128,7 @@ class Deploy {
                 }
             }
         }
-        if (empty($this->_workdirectory)){
+        if (empty($this->_workdirectory)) {
             $this->_workdirectory = $this->_directory;
         }
     
@@ -137,75 +137,53 @@ class Deploy {
         $this->log('Work Directory:' . $this->_workdirectory);
     }
 
-  /**
-  * Writes a message to the log file.
-  * 
-  * @param  string  $message  The message to write
-  * @param  string  $type     The type of log message (e.g. INFO, DEBUG, ERROR, etc.)
-  */
-  public function log($message, $type = 'INFO')
-  {
-      if ($this->_log)
-      {
-          // Set the name of the log file
-          $filename = $this->_log;
+    /**
+    * Writes a message to the log file.
+    * 
+    * @param  string  $message  The message to write
+    * @param  string  $type     The type of log message (e.g. INFO, DEBUG, ERROR, etc.)
+    */
+    public function log($message, $type = 'INFO')
+    {
+        if ($this->_log) {
+            // Set the name of the log file
+            $filename = $this->_log;
 
-          if ( ! file_exists($filename))
-          {
-              // Create the log file
-              file_put_contents($filename, '');
+            if ( ! file_exists($filename)) {
+                // Create the log file
+                file_put_contents($filename, '');
 
-              // Allow anyone to write to log files
-              chmod($filename, 0666);
-          }
+                // Allow anyone to write to log files
+                chmod($filename, 0666);
+            }
 
-          // Write the message into the log file
-          // Format: time --- type: message
-          file_put_contents($filename, date($this->_date_format).' --- '.$type.': '.$message.PHP_EOL, FILE_APPEND);
-      }
-  }
+            // Write the message into the log file
+            // Format: time --- type: message
+            file_put_contents($filename, date($this->_date_format).' --- '.$type.': '.$message.PHP_EOL, FILE_APPEND);
+        }
+    }
 
-  /**
-  * Executes the necessary commands to deploy the website.
-  */
-  public function execute()
-  {
-      try
-      {
-          // Update the local repository
-          exec('cd ' . $this->_git_dir . ' && ' . $this->_git_bin_path . ' fetch', $output);
-          $this->log('Fetching changes... '.implode(' ', $output));
+    /**
+    * Executes the necessary commands to deploy the website.
+    */
+    public function execute()
+    {
+        try {
+            // Update the local repository
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_workdirectory . ' fetch', $output);
+            $this->log('Fetching changes... '.implode(' ', $output));
 
-          // Checking out to web directory
-		  exec('cd ' . $this->_git_dir . ' && GIT_WORK_TREE=' . $this->_www_dir . ' ' . $this->_git_bin_path  . ' checkout -f', $output);
-          $this->log('Checking out changes to www directory... '.implode(' ', $output));
+            // Checking out to web directory
+            exec('cd ' . $this->_directory . ' && GIT_WORK_TREE=' . $this->_workdirectory . ' ' . $this->_git_bin_path  . ' checkout -f', $output);
+            $this->log('Checking out changes to www directory... '.implode(' ', $output));
 
-          if (is_callable($this->post_deploy))
-          {
-              call_user_func($this->post_deploy, $this->_data);
-          }
+            if (is_callable($this->post_deploy)) {
+                call_user_func($this->post_deploy, $this->_data);
+            }
 
-          $this->log('Deployment successful.');
-      }
-      catch (Exception $e)
-      {
-          $this->log($e, 'ERROR');
-      }
-  }
-
+            $this->log('Deployment successful.');
+        } catch (Exception $e) {
+            $this->log($e, 'ERROR');
+        }
+    }
 }
-
-$deploy = new Deploy($git_serverpath, $www_serverpath);
-
-/*
-$deploy->post_deploy = function() use ($deploy) {
-  // hit the wp-admin page to update any db changes
-   exec('curl http://example.com/wp-admin/upgrade.php?step=upgrade_db');
-   $deploy->log('Updating wordpress database... ');
-};
-*/
-
-if ($_GET['key'] === $secret_key)  {
-	$deploy->execute();
-}
-?>
