@@ -39,8 +39,9 @@ $options = array(
     'log'           => 'deploy_log_filename.log',
     'branch'        => 'master',
     'remote'        => 'origin',
-    'date_format'   => 'Y-m-d H:i:sP',
     'syncSubmodule' => false,
+    'date_format'   => 'Y-m-d H:i:sP',
+    'git_bin_path'  => 'git',
 )
 
 if ($_GET['key'] === $secret_key)  {
@@ -93,7 +94,14 @@ class Deploy {
     * @var boolean
     */
     private $_syncSubmodule = false;
-    
+
+    /**
+    * The path to git
+    * 
+    * @var string
+    */
+    private $_git_bin_path = 'git';
+
     /**
     * A callback function to call after the deploy has finished.
     * 
@@ -182,7 +190,7 @@ class Deploy {
             $strtedAt = microtime(true);
             
             // Discard any changes to tracked files since our last deploy
-            exec('git --git-dir='.$this->_directory.'/.git --work-tree='.$this->_workdirectory . ' reset --hard HEAD', $output);
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_workdirectory . ' reset --hard HEAD', $output);
             if (is_array($output)) {
                 $output = implode(' ', $output);
             }
@@ -190,7 +198,7 @@ class Deploy {
             
             // Update the local repository
             $output = '';
-            exec('git --git-dir='.$this->_directory.'/.git --work-tree='.$this->_workdirectory . ' pull', $output);
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_workdirectory . ' pull', $output);
             if (is_array($output)) {
                 $output = implode(' ', $output);
             }
@@ -206,7 +214,7 @@ class Deploy {
             }
             // Update the submodule
             $output = '';
-            exec('git --git-dir='.$this->_directory.'/.git --work-tree='.$this->_workdirectory . ' submodule update --init --recursive --remote', $output);
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_workdirectory . ' submodule update --init --recursive --remote', $output);
             if (is_array($output)) {
                 $output = implode(' ', $output);
             }
