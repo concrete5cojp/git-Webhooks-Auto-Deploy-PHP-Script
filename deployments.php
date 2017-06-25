@@ -137,8 +137,8 @@ class Deploy {
                 }
             }
         }
-        if (empty($_workdirectory)){
-            $_workdirectory = $_directory;
+        if (empty($this->_workdirectory)){
+            $this->_workdirectory = $this->_directory;
         }
     
         $this->log('Attempting deployment...');
