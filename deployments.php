@@ -128,7 +128,6 @@ class Deploy {
     /**
     * Sets up defaults.
     * 
-    * @param  string  $directory  Directory where your website is located
     * @param  array   $options    Options for default settings
     */
     public function __construct($options = array())
