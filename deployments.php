@@ -10,22 +10,6 @@
  *  
   */
 
-/**
-* The Full Server Path to git repository and web location.
-* Can be either relative or absolute path
-* 
-* @var string
-*/
-$git_serverpath = '/path/to/git/repo';
-$www_serverpath = '/path/to/www';
-
-/**
-* The Secret Key so that it's a bit more secure to run this script
-* 
-* @var string
-*/
-$secret_key = 'EnterYourSecretKeyHere';
-
 /*
  *    Webhook Sample
  *        For BitBucket, use 'POST HOOK'
@@ -35,13 +19,46 @@ $secret_key = 'EnterYourSecretKeyHere';
  *        (https access & Basic Auth makes it a bit more secure if your server supports it)
  */
 
-
 /**
 * The TimeZone format used for logging.
+* @var Timezone
 * @link    http://php.net/manual/en/timezones.php
 */
 date_default_timezone_set('Asia/Tokyo');
 
+/**
+* The Secret Key so that it's a bit more secure to run this script
+* 
+* @var string
+*/
+$secret_key = 'EnterYourSecretKeyHere';
+
+/**
+* The Options
+* Only 'directory' is required.
+* @var array
+*/
+$options = array(
+    'directory'     => '/path/to/git/repo',
+    'work_dir'      => '/path/to/www',
+    'log'           => 'deploy_log_filename.log',
+    'branch'        => 'master',
+    'remote'        => 'origin',
+    'date_format'   => 'Y-m-d H:i:sP',
+    'syncSubmodule' => false,
+)
+
+if ($_GET['key'] === $secret_key)  {
+    $deploy = new Deploy($options);
+	$deploy->execute();
+    /*
+    $deploy->post_deploy = function() use ($deploy) {
+      // hit the wp-admin page to update any db changes
+       exec('curl http://example.com/wp-admin/upgrade.php?step=upgrade_db');
+       $deploy->log('Updating wordpress database... ');
+    };
+    */
+}
 
 class Deploy {
 
