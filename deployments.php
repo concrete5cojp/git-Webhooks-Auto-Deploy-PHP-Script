@@ -47,7 +47,7 @@ $options = array(
     'date_format'   => 'Y-m-d H:i:sP',
     'syncSubmodule' => false,
     'git_bin_path'  => 'git',
-)
+);
 
 if ($_GET['key'] === $secret_key)  {
     $deploy = new Deploy($options);
