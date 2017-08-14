@@ -146,12 +146,12 @@ class Deploy {
             }
         }
         if (empty($this->_work_dir)){
-            $this->_workdirectory = $this->_directory . "/.git";
+            $this->_work_dir = $this->_directory . "/.git";
         }
     
         $this->log('Attempting deployment...');
         $this->log('Git Directory:' . $this->_directory);
-        $this->log('Work Directory:' . $this->_workdirectory);
+        $this->log('Work Directory:' . $this->_work_dir);
     }
     /**
     * Writes a message to the log file.
