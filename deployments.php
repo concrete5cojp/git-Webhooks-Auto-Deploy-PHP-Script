@@ -40,7 +40,7 @@ $secret_key = 'EnterYourSecretKeyHere';
 */
 $options = array(
     'directory'     => '/path/to/git/repo',
-    'work_dir'      => '/path/to/www',  // leave it blank or null if you have .git directory
+    'work_dir'      => '/path/to/www',  // leave it blank or null if you are using .git directory
     'log'           => 'deploy_log_filename.log',
     'branch'        => 'master',
     'remote'        => 'origin',
@@ -129,7 +129,8 @@ class Deploy {
             }
         }
         if (empty($this->_work_dir)) {
-            $this->_work_dir = $this->_directory . '/.git';
+            $this->_work_dir = $this->_directory;
+            $this->_directory = $this->_directory . '/.git';
         }
     
         $this->log('Attempting deployment...');
