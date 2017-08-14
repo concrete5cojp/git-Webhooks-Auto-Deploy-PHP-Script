@@ -107,7 +107,7 @@ class Deploy {
     * 
     * @var string
     */
-    private $_workdirectory;
+    private $_work_dir;
 
     /**
     * Sets up defaults.
@@ -128,13 +128,13 @@ class Deploy {
                 }
             }
         }
-        if (empty($this->_workdirectory)) {
-            $this->_workdirectory = $this->_directory;
+        if (empty($this->_work_dir)) {
+            $this->_work_dir = $this->_directory;
         }
     
         $this->log('Attempting deployment...');
         $this->log('Git Directory:' . $this->_directory);
-        $this->log('Work Directory:' . $this->_workdirectory);
+        $this->log('Work Directory:' . $this->_work_dir);
     }
 
     /**
@@ -170,11 +170,11 @@ class Deploy {
     {
         try {
             // Update the local repository
-            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_workdirectory . ' fetch', $output);
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_work_dir . ' fetch', $output);
             $this->log('Fetching changes... '.implode(' ', $output));
 
             // Checking out to web directory
-            exec('cd ' . $this->_directory . ' && GIT_WORK_TREE=' . $this->_workdirectory . ' ' . $this->_git_bin_path  . ' checkout -f', $output);
+            exec('cd ' . $this->_directory . ' && GIT_WORK_TREE=' . $this->_work_dir . ' ' . $this->_git_bin_path  . ' checkout -f', $output);
             $this->log('Checking out changes to www directory... '.implode(' ', $output));
 
             if (is_callable($this->post_deploy)) {
