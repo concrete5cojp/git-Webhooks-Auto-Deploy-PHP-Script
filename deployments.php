@@ -56,8 +56,6 @@ if ($_GET['key'] === $secret_key)  {
        $deploy->log('Updating wordpress database... ');
     };
     */
-}
-
 } else {
     echo "executed";
 }
