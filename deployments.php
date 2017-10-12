@@ -42,7 +42,7 @@ $options = array(
     'syncSubmodule' => false,
     'date_format'   => 'Y-m-d H:i:sP',
     'git_bin_path'  => 'git',
-)
+);
 
 
 
@@ -56,8 +56,6 @@ if ($_GET['key'] === $secret_key)  {
        $deploy->log('Updating wordpress database... ');
     };
     */
-}
-
 } else {
     echo "executed";
 }
