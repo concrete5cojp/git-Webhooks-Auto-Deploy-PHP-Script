@@ -35,7 +35,7 @@ $secret_key = 'EnterYourSecretKeyHere';
 */
 $options = array(
     'directory'     => '/path/to/git/repo',
-    'work_dir'      => '/path/to/work/dir',
+    'work_dir'      => '/path/to/www',  // leave it blank or null if you are using .git directory
     'log'           => 'deploy_log_filename.log',
     'branch'        => 'master',
     'remote'        => 'origin',
@@ -43,6 +43,8 @@ $options = array(
     'date_format'   => 'Y-m-d H:i:sP',
     'git_bin_path'  => 'git',
 );
+
+
 
 if ($_GET['key'] === $secret_key)  {
     $deploy = new Deploy($options);
@@ -56,8 +58,11 @@ if ($_GET['key'] === $secret_key)  {
     */
 }
 
-class Deploy {
+} else {
+    echo "executed";
+}
 
+class Deploy {
     /**
     * The name of the file that will be used for logging deployments. Set to 
     * FALSE to disable logging.
@@ -94,14 +99,12 @@ class Deploy {
     * @var boolean
     */
     private $_syncSubmodule = false;
-
     /**
     * The path to git
     * 
     * @var string
     */
     private $_git_bin_path = 'git';
-
     /**
     * A callback function to call after the deploy has finished.
     * 
@@ -116,15 +119,13 @@ class Deploy {
     * @var string
     */
     private $_directory;
-
     /**
     * The directory where your git work directory is located, can be 
     * a relative or absolute path from this PHP script on server.
     * 
     * @var string
     */
-    private $_workdirectory;
-
+    private $_work_dir;
     /**
     * Sets up defaults.
     * 
@@ -144,15 +145,15 @@ class Deploy {
                 }
             }
         }
-        if (empty($this->_workdirectory)){
-            $this->_workdirectory = $this->_directory;
+        if (empty($this->_work_dir)) {
+            $this->_work_dir = $this->_directory;
+            $this->_directory = $this->_directory . '/.git';
         }
     
         $this->log('Attempting deployment...');
         $this->log('Git Directory:' . $this->_directory);
-        $this->log('Work Directory:' . $this->_workdirectory);
+        $this->log('Work Directory:' . $this->_work_dir);
     }
-
     /**
     * Writes a message to the log file.
     * 
@@ -178,7 +179,6 @@ class Deploy {
             file_put_contents($filename, date($this->_date_format).' --- '.$type.': '.$message.PHP_EOL, FILE_APPEND);
         }
     }
-
     /**
     * Executes the necessary commands to deploy the website.
     */
@@ -189,7 +189,7 @@ class Deploy {
             $strtedAt = microtime(true);
             
             // Discard any changes to tracked files since our last deploy
-            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_workdirectory . ' reset --hard HEAD', $output);
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . ' --work-tree=' . $this->_work_dir . ' reset --hard HEAD', $output);
             if (is_array($output)) {
                 $output = implode(' ', $output);
             }
@@ -197,7 +197,7 @@ class Deploy {
             
             // Update the local repository
             $output = '';
-            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_workdirectory . ' pull', $output);
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . ' --work-tree=' . $this->_work_dir . ' pull', $output);
             if (is_array($output)) {
                 $output = implode(' ', $output);
             }
@@ -213,16 +213,12 @@ class Deploy {
             }
             // Update the submodule
             $output = '';
-            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_workdirectory . ' submodule update --init --recursive --remote', $output);
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . ' --work-tree=' . $this->_work_dir . ' submodule update --init --recursive --remote', $output);
             if (is_array($output)) {
                 $output = implode(' ', $output);
             }
                 $this->log('Updating submodules...'.$output);
             }
-            
-            // Secure the .git directory
-            exec('chmod -R og-rx . ' .$this->_directory .'/.git');
-            $this->log('Securing .git directory... ');
             
             if (is_callable($this->post_deploy)) {
                   call_user_func($this->post_deploy, $this->_data);
