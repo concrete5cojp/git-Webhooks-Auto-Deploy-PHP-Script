@@ -187,7 +187,7 @@ class Deploy {
             $strtedAt = microtime(true);
             
             // Discard any changes to tracked files since our last deploy
-            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . ' --work-tree=' . $this->_work_dir . ' reset --hard HEAD', $output);
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . ' --work-tree=' . $this->_work_dir . ' reset --hard HEAD 2>&1', $output);
             if (is_array($output)) {
                 $output = implode(' ', $output);
             }
@@ -195,7 +195,7 @@ class Deploy {
             
             // Update the local repository
             $output = '';
-            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . ' --work-tree=' . $this->_work_dir . ' pull', $output);
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . ' --work-tree=' . $this->_work_dir . ' pull 2>&1', $output);
             if (is_array($output)) {
                 $output = implode(' ', $output);
             }
