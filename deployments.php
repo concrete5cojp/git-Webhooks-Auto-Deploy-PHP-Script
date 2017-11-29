@@ -3,7 +3,7 @@
  *	GitHub & Bitbucket Deployment Sample Script
  *	Originally found at
  *	http://brandonsummers.name/blog/2012/02/10/using-bitbucket-for-automated-deployments/
- *
+ *	http://jonathannicol.com/blog/2013/11/19/automated-git-deployments-from-bitbucket/
  */
 
 /*
@@ -23,18 +23,19 @@
 date_default_timezone_set('Asia/Tokyo');
 
 /**
-* The Secret Key
+* The Secret Key so that it's a bit more secure to run this script
+* 
 * @var string
 */
 $secret_key = 'EnterYourSecretKeyHere';
 
 /**
 * The Options
-* Only 'directory' is required.
+* Only 'directory' is required. If you 'git clone --mirror' to your local repo directory, and then, 'GIT_WORK_TREE=[www directory] git checkout -f [your desired branch]', make sure to set both directory and work_dir.
 * @var array
 */
 $options = array(
-    'directory'     => '/path/to/git/repo',
+    'directory'     => '/path/to/git/repo',  // No slash at the end
     'work_dir'      => '/path/to/www',  // leave it blank or null if you are using .git directory
     'log'           => 'deploy_log_filename.log',
     'branch'        => 'master',
@@ -43,8 +44,6 @@ $options = array(
     'date_format'   => 'Y-m-d H:i:sP',
     'git_bin_path'  => 'git',
 );
-
-
 
 if ($_GET['key'] === $secret_key)  {
     $deploy = new Deploy($options);
@@ -56,8 +55,6 @@ if ($_GET['key'] === $secret_key)  {
        $deploy->log('Updating wordpress database... ');
     };
     */
-} else {
-    echo "executed";
 }
 
 class Deploy {
@@ -143,9 +140,10 @@ class Deploy {
                 }
             }
         }
-        if (empty($this->_work_dir)) {
+        if ($this->_work_dir == $this->_directory) {
+            $this->log('_work_dir is empty. So, Setting git directory.');
             $this->_work_dir = $this->_directory;
-            $this->_directory = $this->_directory . '/.git';
+            $this->_directory = $this->_directory . '.git/';
         }
     
         $this->log('Attempting deployment...');
@@ -222,7 +220,7 @@ class Deploy {
                   call_user_func($this->post_deploy, $this->_data);
             }
             
-            $this->log('Deployment successful.');
+            $this->log('Deployment finished.');
         }
         catch (Exception $e) {
             $this->log($e, 'ERROR');
