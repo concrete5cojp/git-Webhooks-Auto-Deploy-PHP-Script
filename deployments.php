@@ -34,27 +34,31 @@ $secret_key = 'EnterYourSecretKeyHere';
 * Only 'directory' is required. If you 'git clone --mirror' to your local repo directory, and then, 'GIT_WORK_TREE=[www directory] git checkout -f [your desired branch]', make sure to set both directory and work_dir.
 * @var array
 */
-$options = array(
-    'directory'     => '/path/to/git/repo',  // No slash at the end
-    'work_dir'      => '/path/to/www',  // leave it blank or null if you are using .git directory
-    'log'           => 'deploy_log_filename.log',
-    'branch'        => 'master',
-    'remote'        => 'origin',
-    'syncSubmodule' => false,
-    'date_format'   => 'Y-m-d H:i:sP',
-    'git_bin_path'  => 'git',
-);
+$options = [
+    1 => [
+        'directory'     => '/path/to/git/repo',  // No slash at the end
+        'work_dir'      => '/path/to/www',  // leave it blank or null if you are using .git directory
+        'log'           => 'deploy_log_filename.log',
+        'branch'        => 'master',
+        'remote'        => 'origin',
+        'syncSubmodule' => false,
+        'date_format'   => 'Y-m-d H:i:sP',
+        'git_bin_path'  => 'git',
+        ],
+];
 
 if ($_GET['key'] === $secret_key)  {
-    $deploy = new Deploy($options);
-	$deploy->execute();
-    /*
-    $deploy->post_deploy = function() use ($deploy) {
-      // hit the wp-admin page to update any db changes
-       exec('curl http://example.com/wp-admin/upgrade.php?step=upgrade_db');
-       $deploy->log('Updating wordpress database... ');
-    };
-    */
+    foreach ($options as $option) {
+        $deploy = new Deploy($option);
+    	$deploy->execute();
+        /*
+        $deploy->post_deploy = function() use ($deploy) {
+          // hit the wp-admin page to update any db changes
+           exec('curl http://example.com/wp-admin/upgrade.php?step=upgrade_db');
+           $deploy->log('Updating wordpress database... ');
+        };
+        */
+    }
 }
 
 class Deploy {
