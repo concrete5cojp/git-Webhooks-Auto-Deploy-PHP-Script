@@ -171,13 +171,20 @@ class Deploy {
     {
         try {
             // Update the local repository
-            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_work_dir . ' fetch', $output);
-            $this->log('Fetching changes... '.implode(' ', $output));
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_work_dir . ' fetch', $output, $return_var);
+            if ($return_var === 0) {
+                $this->log('Fetching changes... '.implode(' ', $output));
+            } else {
+                throw new Exception(implode("\n", $output));
+            }
 
             // Checking out to web directory
-            exec('cd ' . $this->_directory . ' && GIT_WORK_TREE=' . $this->_work_dir . ' ' . $this->_git_bin_path  . ' checkout -f', $output);
-            $this->log('Checking out changes to www directory... '.implode(' ', $output));
-
+            exec('cd ' . $this->_directory . ' && GIT_WORK_TREE=' . $this->_work_dir . ' ' . $this->_git_bin_path  . ' checkout -f', $output, $return_var);
+            if ($return_var === 0) {
+                $this->log('Checking out changes to www directory... '.implode(' ', $output));
+            } else {
+                throw new Exception(implode("\n", $output));
+            }
             if (is_callable($this->post_deploy)) {
                 call_user_func($this->post_deploy, $this->_data);
             }
