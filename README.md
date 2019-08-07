@@ -47,10 +47,13 @@ Is is very secure way of place git repository outside of publicly visible www ro
 - `git clone --mirror [GIT PATH]` to the directory
 - `GIT_WORK_TREE=[www_path] git checkout -f [your desired branch]`
 
-## 3. Set your config
+## 3. Set your config & upload the file
 
 - Set all necessary config setting inside of deployement.php
     - Read carefully from line 1-45. You won't need to change below `Main Section`
+- Upload your `deployment.php` to where you stage your script
+    - Make sure to upload in secure area.
+    - You may rename filename.
 
 ## 4. Set-up a webhook and test drive
 
