@@ -45,7 +45,7 @@ Is is very secure way of place git repository outside of publicly visible www ro
 - Login via SSH
 - cd to the path
 - `git clone --mirror [GIT PATH]` to the directory
-- 'GIT_WORK_TREE=[www_path] git checkout -f [your desired branch]'  
+- `GIT_WORK_TREE=[www_path] git checkout -f [your desired branch]`
 
 ## 3. Set your config
 
