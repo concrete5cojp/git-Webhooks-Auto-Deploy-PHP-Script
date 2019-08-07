@@ -1,24 +1,15 @@
 <?php
-/*
- *	GitHub & Bitbucket Deployment Sample Script
- *	Originally found at
- *	http://brandonsummers.name/blog/2012/02/10/using-bitbucket-for-automated-deployments/
- *	http://jonathannicol.com/blog/2013/11/19/automated-git-deployments-from-bitbucket/
- *  
- *	You must 1st 'git clone --mirror' to your local repo directory,
- *	And then, 'GIT_WORK_TREE=[www directory] git checkout -f [your desired branch]'  
- *  
- *	Check `dev-server` branch for the repo which you did simple `git clone`
- *  
-  */
-
-/*
- *    Webhook Sample
- *        For BitBucket, use 'POST HOOK'
- *        For GitHub, use 'Webhooks'
- *    URL Format
- *        https://[Basic Auth ID]:[Basic Auth Pass]@example.com/deployments.php?key=EnterYourSecretKeyHere
- *        (https access & Basic Auth makes it a bit more secure if your server supports it)
+/**
+ * [Job] git Webhooks Auto Deployment PHP Sample Script
+ *
+ * PHP script to work with webhook to deploy your git repo
+ * Read https://github.com/katzueno/git-Webhooks-Auto-Deploy-PHP-Script for the detail
+ *
+ * @access public
+ * @author Katz Ueno <katzueno.com>
+ * @copyright Katz Ueno
+ * @category Deployment
+ * @version 3.0.0 beta
  */
 
 /**
@@ -29,11 +20,12 @@
 date_default_timezone_set('Asia/Tokyo');
 
 /**
-* The Secret Key so that it's a bit more secure to run this script
-* 
-* @var string
-*/
-$secret_key = 'EnterYourSecretKeyHere';  // Enter the secret key, this works like a password
+ * The Secret Key so that it's a bit more secure to run this script.
+ * e.g.) https://example.com/deployments.php?key=EnterYourSecretKeyHere
+ *
+ * @var string
+ */
+$secret_key = 'EnterYourSecretKeyHere';
 
 /**
 * The Options
@@ -42,15 +34,19 @@ $secret_key = 'EnterYourSecretKeyHere';  // Enter the secret key, this works lik
 */
 $options = array(
     'directory'     => '/path/to/git/repo', // Enter your server's git repo location
-    'work_dir'      => '/path/to/www',  // Enter your server's work directory. If you don't separate git and work directory, please leave it empty.
-    'log'           => 'deploy_log_filename.log', // relative or absolute path where you save log file.
+    'work_dir'      => '/path/to/www',  // Enter your server's work directory. If you don't separate git and work directories, please leave it empty or false.
+    'log'           => 'deploy_log_filename.log', // relative or absolute path where you save log file. Set it to false without quotation mark if you don't need to save log file.
     'branch'        => 'master', // Indicate which branch you want to checkout
     'remote'        => 'origin', // Indicate which remote repo you want to fetch
     'date_format'   => 'Y-m-d H:i:sP',  // Indicate date format of your log file
-    'syncSubmodule' => false, // Currently, this option is no longer working. Lost in some commit.
+    'syncSubmodule' => false, // If your repo has submodule, set it true. (haven't tested it if this actually works)
     'reset'         => false, // If you want to git reset --hard every time you deploy, please set it true
     'git_bin_path'  => 'git',
 );
+
+/**
+ * Main Section: No need to modify below this line
+ */
 
 if ($_GET['key'] === $secret_key)  {
     $deploy = new Deploy($options);
