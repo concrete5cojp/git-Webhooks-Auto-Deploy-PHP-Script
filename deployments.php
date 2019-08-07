@@ -5,8 +5,10 @@
  *	http://brandonsummers.name/blog/2012/02/10/using-bitbucket-for-automated-deployments/
  *	http://jonathannicol.com/blog/2013/11/19/automated-git-deployments-from-bitbucket/
  *  
- *	We assume you did a 'git clone --mirror' to your local repo directory,
+ *	You must 1st 'git clone --mirror' to your local repo directory,
  *	And then, 'GIT_WORK_TREE=[www directory] git checkout -f [your desired branch]'  
+ *  
+ *	Check `dev-server` branch for the repo which you did simple `git clone`
  *  
   */
 
@@ -31,7 +33,7 @@ date_default_timezone_set('Asia/Tokyo');
 * 
 * @var string
 */
-$secret_key = 'EnterYourSecretKeyHere';
+$secret_key = 'EnterYourSecretKeyHere';  // Enter the secret key, this works like a password
 
 /**
 * The Options
@@ -39,13 +41,13 @@ $secret_key = 'EnterYourSecretKeyHere';
 * @var array
 */
 $options = array(
-    'directory'     => '/path/to/git/repo',
-    'work_dir'      => '/path/to/www',  // leave it blank or null if you are using .git directory
-    'log'           => 'deploy_log_filename.log',
-    'branch'        => 'master',
-    'remote'        => 'origin',
-    'date_format'   => 'Y-m-d H:i:sP',
-    'syncSubmodule' => false,
+    'directory'     => '/path/to/git/repo', // Enter your server's git repo location
+    'work_dir'      => '/path/to/www',  // Enter your server's work directory
+    'log'           => 'deploy_log_filename.log', // relative or absolute path where you save log file.
+    'branch'        => 'master', // Indicate which branch you want to checkout
+    'remote'        => 'origin', // Indicate which remote repo you want to fetch
+    'date_format'   => 'Y-m-d H:i:sP',  // Indicate date format of your log file
+    'syncSubmodule' => false, // Currently, this option is no longer working. Lost in some commit.
     'git_bin_path'  => 'git',
 );
 
@@ -128,9 +130,9 @@ class Deploy {
                 }
             }
         }
-        if (empty($this->_work_dir)) {
+        if (empty($this->_work_dir) || ($this->_work_dir == $this->_directory)) {
             $this->_work_dir = $this->_directory;
-            $this->_directory = $this->_directory . '/.git';
+            $this->_directory = $this->_directory . '.git';
         }
     
         $this->log('Attempting deployment...');
@@ -170,8 +172,18 @@ class Deploy {
     public function execute()
     {
         try {
+
+            // Discard any changes to tracked files since our last deploy
+            if ($this->_reset) {
+                exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . ' --work-tree=' . $this->_work_dir . ' reset --hard HEAD 2>&1', $output);
+                if (is_array($output)) {
+                    $output = implode(' ', $output);
+                }
+                $this->log('Reseting repository... '.$output);
+            }
+
             // Update the local repository
-            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . '/.git --work-tree=' . $this->_work_dir . ' fetch', $output, $return_var);
+            exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . ' --work-tree=' . $this->_work_dir . ' fetch', $output, $return_var);
             if ($return_var === 0) {
                 $this->log('Fetching changes... '.implode(' ', $output));
             } else {
