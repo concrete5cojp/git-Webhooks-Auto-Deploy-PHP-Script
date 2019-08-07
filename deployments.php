@@ -42,12 +42,13 @@ $secret_key = 'EnterYourSecretKeyHere';  // Enter the secret key, this works lik
 */
 $options = array(
     'directory'     => '/path/to/git/repo', // Enter your server's git repo location
-    'work_dir'      => '/path/to/www',  // Enter your server's work directory
+    'work_dir'      => '/path/to/www',  // Enter your server's work directory. If you don't separate git and work directory, please leave it empty.
     'log'           => 'deploy_log_filename.log', // relative or absolute path where you save log file.
     'branch'        => 'master', // Indicate which branch you want to checkout
     'remote'        => 'origin', // Indicate which remote repo you want to fetch
     'date_format'   => 'Y-m-d H:i:sP',  // Indicate date format of your log file
     'syncSubmodule' => false, // Currently, this option is no longer working. Lost in some commit.
+    'reset'         => false, // If you want to git reset --hard every time you deploy, please set it true
     'git_bin_path'  => 'git',
 );
 
@@ -112,6 +113,14 @@ class Deploy {
     private $_work_dir;
 
     /**
+     * Determine if it will execute to git checkout to work directory,
+     * or git pull.
+     *
+     * @var boolean
+     */
+    private $_topull = false;
+
+    /**
     * Sets up defaults.
     * 
     * @param  array   $option       Information about the deployment
@@ -119,20 +128,23 @@ class Deploy {
     public function __construct($options = array())
     {
 
-        $available_options = array('directory', 'work_dir', 'log', 'date_format', 'branch', 'remote', 'syncSubmodule, git_bin_path');
+        $available_options = array('directory', 'work_dir', 'log', 'date_format', 'branch', 'remote', 'syncSubmodule', 'reset', 'git_bin_path');
     
         foreach ($options as $option => $value){
             if (in_array($option, $available_options)) {
                 $this->{'_'.$option} = $value;
-                if ($option == 'directory' || $option == 'work_dir') {
+                if ($option == 'directory' || ($option == 'work_dir' && !empty($value)) {
                     // Determine the directory path
                     $this->{'_'.$option} = realpath($value).DIRECTORY_SEPARATOR;
                 }
             }
         }
+
+        $this->_topull = false;
         if (empty($this->_work_dir) || ($this->_work_dir == $this->_directory)) {
             $this->_work_dir = $this->_directory;
             $this->_directory = $this->_directory . '.git';
+            $this->_topull = true;
         }
     
         $this->log('Attempting deployment...');
@@ -172,6 +184,8 @@ class Deploy {
     public function execute()
     {
         try {
+            // Git Submodule - Measure the execution time
+            $strtedAt = microtime(true);
 
             // Discard any changes to tracked files since our last deploy
             if ($this->_reset) {
@@ -187,16 +201,44 @@ class Deploy {
             if ($return_var === 0) {
                 $this->log('Fetching changes... '.implode(' ', $output));
             } else {
-                throw new Exception(implode("\n", $output));
+                throw new Exception(implode(' ', $output));
             }
 
             // Checking out to web directory
-            exec('cd ' . $this->_directory . ' && GIT_WORK_TREE=' . $this->_work_dir . ' ' . $this->_git_bin_path  . ' checkout -f', $output, $return_var);
-            if ($return_var === 0) {
-                $this->log('Checking out changes to www directory... '.implode(' ', $output));
+            if ($this->_topull) {
+                exec('cd ' . $this->_directory . ' && GIT_WORK_TREE=' . $this->_work_dir . ' ' . $this->_git_bin_path . ' pull 2>&1', $output, $return_var);
+                if ($return_var === 0) {
+                    $this->log('Pulling changes to directory... ' . implode(' ', $output));
+                } else {
+                    throw new Exception(implode(' ', $output));
+                }
             } else {
-                throw new Exception(implode("\n", $output));
+                exec('cd ' . $this->_directory . ' && GIT_WORK_TREE=' . $this->_work_dir . ' ' . $this->_git_bin_path . ' checkout -f', $output, $return_var);
+                if ($return_var === 0) {
+                    $this->log('Checking out changes to www directory... ' . implode(' ', $output));
+                } else {
+                    throw new Exception(implode(' ', $output));
+                }
+
             }
+
+            if ($this->_syncSubmodule) {
+                // Wait 2 seconds if main git pull takes less than 2 seconds.
+                $endedAt = microtime(true);
+                $mDuration = $endedAt - $strtedAt;
+                if ($mDuration < 2) {
+                    $this->log('Waiting for 2 seconds to execute git submodule update.');
+                    sleep(2);
+                }
+                // Update the submodule
+                $output = '';
+                exec($this->_git_bin_path . ' --git-dir=' . $this->_directory . ' --work-tree=' . $this->_work_dir . ' submodule update --init --recursive --remote', $output);
+                if (is_array($output)) {
+                    $output = implode(' ', $output);
+                }
+                $this->log('Updating submodules...'.$output);
+            }
+
             if (is_callable($this->post_deploy)) {
                 call_user_func($this->post_deploy, $this->_data);
             }
