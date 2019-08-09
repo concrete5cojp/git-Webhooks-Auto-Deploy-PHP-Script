@@ -129,7 +129,7 @@ class Deploy {
         foreach ($options as $option => $value){
             if (in_array($option, $available_options)) {
                 $this->{'_'.$option} = $value;
-                if ($option == 'directory' || ($option == 'work_dir' && !empty($value)) {
+                if (($option == 'directory') || ($option == 'work_dir' && $value)) {
                     // Determine the directory path
                     $this->{'_'.$option} = realpath($value).DIRECTORY_SEPARATOR;
                 }
