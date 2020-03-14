@@ -101,7 +101,7 @@ $ sh setting-vhost-route53.sh [SUBDOMAIN] [GIT CLONE URL] [BRANCH NAME] [BASIC A
 
 $   | Option Name     | Description | Example
 ----|-----------------|-------------|--------
-$1  | [SUBDOMAIN]     | Set your desired subdomain   | n/a/
+$1  | [SUBDOMAIN]     | Set your desired subdomain   | `subdomain`
 $2  | [Git Clone URL] | Enter URL to git clone | `git@github.com:katzueno/git-Webhooks-Auto-Deploy-PHP-Script.git`
 $3  | [BRANCH NAME]   | Branch you want to check out initially | `master`
 $4  | [BASIC AUTH USERNAME] | You deside the Basic Auth ID | `username`
@@ -110,7 +110,7 @@ $6  | [DEPLOY KEY]    | Generate random key as additional security measure of de
 
 ```
 Example
-$ sh setting-vhost-route53.sh subdomain git@github.com:katzueno/git-Webhooks-Auto-Deploy-PHP-Script.git master [BASIC AUTH USERNAME] username 1234567890abcdefABCDEF
+$ sh setting-vhost-route53.sh subdomain git@github.com:katzueno/git-Webhooks-Auto-Deploy-PHP-Script.git master username 1234567890abcdefABCDEF
 ```
 
 At the end of shell, it will print out nice markdown for your documentation to share it your colleagues.
