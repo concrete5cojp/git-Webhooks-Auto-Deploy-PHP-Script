@@ -1,0 +1,70 @@
+server {
+    listen       80;
+    listen       [::]:80;
+    listen       443 ssl http2;
+    listen       [::]:443 ssl http2;
+
+    # Replace 'example.com' to your domain
+
+    server_name  SUBDOMAIN.example.com;
+    access_log   /var/log/nginx/SUBDOMAIN.example.com_access.log main;
+    error_log    /var/log/nginx/SUBDOMAIN.example.com_error.log warn;
+    root         /var/www/vhosts/SUBDOMAIN.example.com;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
+
+    charset      utf-8;
+	client_max_body_size 32m;
+
+    # Setup Let's Encrypt or any other wild card SSL Certificate, and set-up the config, then uncomment
+    # include      /etc/nginx/default.d/ssl.conf;
+
+    # Katz has add some spambot IP and browser agent restriction as separate config & including it here.
+    # include      /etc/nginx/default.d/deny_spambot.conf;
+
+    set $auth_basic Restricted;
+    auth_basic $auth_basic;
+        auth_basic_user_file /var/www/vhosts/SUBDOMAIN.example.com/.htpasswd;
+
+    set $skip_cache 1;
+
+    location /.well-known {
+        # dont-send to php we need it open for lets encrypt
+        # try if it exists, if not redirect back to index.php
+        auth_basic off;
+        allow all;
+        try_files $uri / index.php;
+    }
+
+	gzip_vary on;
+	gzip_disable msie6;
+	gzip_static on;
+	gzip_comp_level 9;
+ 	gzip_proxied any;
+	gzip_types text/plain text/css application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+
+    location / {
+    	index index.php index.html index.htm;
+        if (!-e $request_filename) {
+        rewrite ^ /index.php last;
+        }
+
+    }
+
+    # Don't output hidden files
+    location ~ /\.git {
+        return 404;
+    }
+    location ~ /\.ht {
+        return 404;
+    }
+    location ~ /\._* {
+        return 404;
+    }
+
+    location ~ \.php($|/) {
+        include       /etc/nginx/fastcgi_params;
+        include       /etc/nginx/fastcgi_params_custom;
+    }
+
+}

@@ -9,7 +9,7 @@
  * @author Katz Ueno <katzueno.com>
  * @copyright Katz Ueno
  * @category Deployment
- * @version 3.0.0 beta
+ * @version 4.0.0 beta
  */
 
 /**
@@ -47,7 +47,6 @@ $options = array(
 /**
  * Main Section: No need to modify below this line
  */
-
 if ($_GET['key'] === $secret_key)  {
     $deploy = new Deploy($options);
 	$deploy->execute();
