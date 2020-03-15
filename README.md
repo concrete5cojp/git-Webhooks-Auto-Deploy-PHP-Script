@@ -241,8 +241,8 @@ $options = array(
     - `AWS_HOSTED_ZONE`: Change it to your Route53 Hosted Zone ID that you obtained earlier.
     - `AWS_EIP`: Change it to your EC2 public IP.
     - `GIT_DEPLOY_URL`: This will print out your main git repo URL for your reference.
-    
 
+That's it. Now you should be ready to go.
 
 # Version History
 
