@@ -120,7 +120,8 @@ $ sh setting-vhost-route53.sh subdomain git@github.com:katzueno/git-Webhooks-Aut
 ## Step 3: Test URL & register it to your git webhook.
 
 - If everything goes successfully, it will print out webhook URL.
-- Register the URL to your GitHub, Bitbucket, GitLab, Backlog and other services webhook URL.
+- Take the webhook URL, open it in your browser. Check the log if the git deployment went successfully.
+- Register the URL to your GitHub, Bitbucket, GitLab, Backlog and other services as a webhook URL.
 - Copy the wiki at the end, and distribute it to yout team.
 
 ## How to set-it up
