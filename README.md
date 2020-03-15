@@ -96,7 +96,7 @@ So that server's nginx user can properly git clone, git fetch from remote git re
 Login to the server via SSH, then run the following command.
 
 ```
-$ sh setting-vhost-route53.sh [SUBDOMAIN] [GIT CLONE URL] [BRANCH NAME] [BASIC AUTH USERNAME] [PASSWORD] [DEPLOY KEY]
+$ sh setting-vhost-route53.sh [SUBDOMAIN] [GIT CLONE URL] [BRANCH NAME] [BASIC AUTH USERNAME] [BASIC AUTH PASSWORD] [DEPLOY KEY]
 ```
 
 $   | Option Name     | Description | Example
@@ -105,7 +105,7 @@ $1  | [SUBDOMAIN]     | Set your desired subdomain   | `subdomain`
 $2  | [Git Clone URL] | Enter URL to git clone | `git@github.com:katzueno/git-Webhooks-Auto-Deploy-PHP-Script.git`
 $3  | [BRANCH NAME]   | Branch you want to check out initially | `master`
 $4  | [BASIC AUTH USERNAME] | You deside the Basic Auth ID | `username`
-$5  | [PASSWORD]      | Generate password of Basic Auth | `password`
+$5  | [BASIC AUTH PASSWORD] | Generate password of Basic Auth | `password`
 $6  | [DEPLOY KEY]    | Generate random key as additional security measure of deployment | `1234567890abcdefABCDEF`
 
 ```
@@ -257,5 +257,5 @@ http://jonathannicol.com/blog/2013/11/19/automated-git-deployments-from-bitbucke
 # Japanese Instruction / 日本語での設定方法
 If you're Japanese, I've added the Japanese instructions in my blog
 
-日本語での設定方法はこちらから
+日本語での設定方法はこちらから (サーバーデプロイスクリプトの説明はまだ追加していません。)
 http://ja.katzueno.com/2015/01/3390/
