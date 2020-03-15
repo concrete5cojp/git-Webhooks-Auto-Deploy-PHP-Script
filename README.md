@@ -15,7 +15,7 @@ If you want to set-up multiple git deployment environments within a AWS Amazon L
 - git clone it to directory,
 - Setup Nginx config & restart
 - Generate web hook URL
-- Registering subdomain to Route53 record.
+- Registering subdomain to a Route53 hosted zone.
 
 # How to set up the git script `deploy.php`
 
