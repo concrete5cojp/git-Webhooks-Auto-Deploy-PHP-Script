@@ -84,6 +84,8 @@ I initially made this script to set-up coding preview server.
 
 `setting-vhost-route53-backlog.sh` is alternative version modified for [Backlog](https://backlog.com/). I don't have readme ready. Please check the shell script to understand the variables.
 
+Since Route53 requires a json file to set the domain, this shell script generates `route53.json` file.
+
 ## How to use
 
 ### Step 1: Assign necessary permission to git repo
