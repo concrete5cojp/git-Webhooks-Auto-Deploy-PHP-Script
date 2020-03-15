@@ -82,7 +82,7 @@ I initially made this script to set-up coding preview server.
 - Have main domain.
 - Automate subdomain creation, Nginx and DNS registration.
 
-`setting-vhost-route53-backlog.sh`, which is modified for [Backlog](https://backlog.com/).
+`setting-vhost-route53-backlog.sh` is alternative version modified for [Backlog](https://backlog.com/). I don't have readme ready. Please check the shell script to understand the variables.
 
 ## How to use
 
@@ -98,6 +98,8 @@ Login to the server via SSH, then run the following command.
 ```
 $ sh setting-vhost-route53.sh [SUBDOMAIN] [GIT CLONE URL] [BRANCH NAME] [BASIC AUTH USERNAME] [BASIC AUTH PASSWORD] [DEPLOY KEY]
 ```
+
+(If you've changed the filename of shell script as I advised, you must change the command accordingly.)
 
 $   | Option Name     | Description | Example
 ----|-----------------|-------------|--------
@@ -156,6 +158,8 @@ Create an IAM policy and place your zone ID under `Resources`. Assign to an new 
 }
 ```
 
+I've copied `AmazonRoute53AutoNamingRegistrantAccess` IAM policy and add Resource restriction to a particular hostedzone. If you want to tighten the security more. You may remove some allowed actions.
+
 
 ### STEP 3: Launch an instance and assign IAM role or IAM user to an EC Instance
 
@@ -187,7 +191,7 @@ Create an IAM policy and place your zone ID under `Resources`. Assign to an new 
 - Upload the template nginx config to your server such as `/etc/nginx/conf.d/`.
 
 
-### STEP 6: Setting up default deploy.php as deploy.php.sample
+### STEP 6: Setting up default deploy.php
 
 - Setting up the `deploy.php` options around line 35 as the following.
 - Make sure to replace `example.com` to your main domain and leave everything else as it is.
@@ -216,7 +220,6 @@ $options = array(
 - Upload all files onto `/var/www/vhosts/example.com/` directory (replace example.com as your main domain)
     - .htpsswd for Basic Auth main domain.
     - Rename `gitignore.sample.txt` to `.gitignore` and upload.
-    - Rename `deploy.php` to `deploy.php.sample` and upload.
     - Rename `deploy.php` to `deploy.php.sample` and upload.
     - Rename `setting-vhost-route53-backlog.sh` to any name that nobody can guess and upload.
 - Login & cd to `/var/www/vhosts/example.com/` via SSH
