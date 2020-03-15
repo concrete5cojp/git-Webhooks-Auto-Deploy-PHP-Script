@@ -117,8 +117,11 @@ Example
 $ sh setting-vhost-route53.sh subdomain git@github.com:katzueno/git-Webhooks-Auto-Deploy-PHP-Script.git master username 1234567890abcdefABCDEF
 ```
 
-At the end of shell, it will print out nice markdown for your documentation to share it your colleagues.
+## Step 3: Test URL & register it to your git webhook.
 
+- If everything goes successfully, it will print out webhook URL.
+- Register the URL to your GitHub, Bitbucket, GitLab, Backlog and other services webhook URL.
+- Copy the wiki at the end, and distribute it to yout team.
 
 ## How to set-it up
 
