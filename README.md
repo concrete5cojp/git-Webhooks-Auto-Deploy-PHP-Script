@@ -9,7 +9,7 @@ This deployment script requires certain level of git and server knowledge.
 
 This script is intended for single server use.
 
-If you want to set-up multiple git deployment environments within a AWS Amazon Linux 2 Server. I've also added `setting-vhost-route53-backlog.sh` to automate setting it up within a min.
+If you want to set-up multiple git deployment environments within a AWS Amazon Linux 2 Server. I've also added `setting-vhost-route53.sh` to automate setting it up within a min.
 
 - creating virtual host directory
 - git clone it to directory,
