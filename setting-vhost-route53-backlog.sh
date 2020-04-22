@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # [Shell] git Webhooks Auto Deployment (Backlog.jp)
-# Server Deployment Script using Backlog
+# Server Deployment Script using Backlog v4.0.1
 # ----------
 # By Katz Ueno
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # [Shell] git Webhooks Auto Deployment
-# Server Deployment Script
+# Server Deployment Script v4.0.1
 # ----------
 # By Katz Ueno
 

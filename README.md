@@ -254,6 +254,7 @@ That's it. Now you should be ready to go.
 
 Date | Version | Release note
 ----|---|-----
+2020/4/22 | 4.0.1    | Fix wiki output to show git branch properly 
 2020/3/13 | 4.0    | - New shell script <br> The shell script to setup web root document, Nginx config and route53 record<br>- Changed `deployments.php` to `deploy.php` to simplify.
 2019/8/7 | 3.0beta | - Bug fixes<br>- new reset option<br>- new submodule option (not tested, so it's beta) <br>- Comments to describe more detail
 
