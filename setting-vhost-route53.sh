@@ -228,7 +228,7 @@ https://${SUBDOMAIN}.${MAIN_DOMAIN}/
 
 ----|------
 Git | ${GIT_SSH}
-Branch | ${GIT_NAME}
+Branch | ${GIT_BRANCH}
 reset hard | Yes
 Deploy script | ${GIT_DEPLOY_URL}
 
