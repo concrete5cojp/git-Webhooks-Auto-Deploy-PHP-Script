@@ -32,6 +32,8 @@ Set-up where you set git deployment script and public area where your actual git
 
 You must make sure git deploy script is protected with basic auth and configured as SSL.
 
+There is an option to setup tailwind CSS. You must install npm before running the script if you would like to use the option.
+
 Obtain all necessary information such as server paths.
 
 ## 3. Git clone to the server
@@ -111,10 +113,11 @@ $3  | [BRANCH NAME]   | Branch you want to check out initially | `master`
 $4  | [BASIC AUTH USERNAME] | You deside the Basic Auth ID | `username`
 $5  | [BASIC AUTH PASSWORD] | Generate password of Basic Auth | `password`
 $6  | [DEPLOY KEY]    | Generate random key as additional security measure of deployment | `1234567890abcdefABCDEF`
+$6  | [NPM OPTION]    | Setup and run the tailwind build post-merge | `tailwind`
 
 ```
 Example
-$ sh setting-vhost-route53.sh subdomain git@github.com:katzueno/git-Webhooks-Auto-Deploy-PHP-Script.git master username 1234567890abcdefABCDEF
+$ sh setting-vhost-route53.sh subdomain git@github.com:katzueno/git-Webhooks-Auto-Deploy-PHP-Script.git master username 1234567890abcdefABCDEF tailwind
 ```
 
 ### Step 3: Test URL & register it to your git webhook.
@@ -244,8 +247,8 @@ $options = array(
     - `DIR_NGINX_CONF`: Change if Nginx vhosts config file are located in different directory.
     - `DIR_OWNER`: Change if you want to change besides nginx:nginx
     - `WEB_USER`: Change if nginx user is not nginx user. This will be use as the part of `sudo -u nginx`.
-    - `AWS_HOSTED_ZONE`: Change it to your Route53 Hosted Zone ID that you obtained earlier.
-    - `AWS_EIP`: Change it to your EC2 public IP.
+    - `AWS_HOSTED_ZONE`: Change it to your Route53 Hosted Zone ID that you obtained earlier. Make it blank if you don't need it.
+    - `AWS_EIP`: Change it to your EC2 public IP. Make it blank if you don't need it.
     - `GIT_DEPLOY_URL`: This will print out your main git repo URL for your reference.
 
 That's it. Now you should be ready to go.
@@ -254,6 +257,7 @@ That's it. Now you should be ready to go.
 
 Date | Version | Release note
 ----|---|-----
+2020/4/24 | 4.1.0    | - Tailwind CSS Build support added<br>- Route53 is now option if you leave AWS parameters blank and added a message
 2020/4/22 | 4.0.1    | Fix wiki output to show git branch properly 
 2020/3/13 | 4.0    | - New shell script <br> The shell script to setup web root document, Nginx config and route53 record<br>- Changed `deployments.php` to `deploy.php` to simplify.
 2019/8/7 | 3.0beta | - Bug fixes<br>- new reset option<br>- new submodule option (not tested, so it's beta) <br>- Comments to describe more detail

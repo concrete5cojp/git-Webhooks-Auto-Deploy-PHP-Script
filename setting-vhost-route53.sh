@@ -14,8 +14,8 @@
 # ----------
 # COMMAND Options
 # ----------
-# sh setting-vhost-route53.sh [SUBDOMAIN] [Git Clone URL] [BRANCH NAME] [BASIC AUTH USERNAME] [PASSWORD] [DEPLOY KEY]
-# e.g.) sh setting-vhost-route53.sh subdomain git@github.com:katzueno/example.git test master coding 123456 ABCDEFG123456
+# sh setting-vhost-route53.sh [SUBDOMAIN] [Git Clone URL] [BRANCH NAME] [BASIC AUTH USERNAME] [PASSWORD] [DEPLOY KEY] [NPM OPTION]
+# e.g.) sh setting-vhost-route53.sh subdomain git@github.com:katzueno/example.git test master coding 123456 ABCDEFG123456 tailwind
 
 # $1 [SUBDOMAIN]
 # $2 [GIT SSH]
@@ -23,6 +23,7 @@
 # $4 [BASIC AUTH USERNAME]
 # $5 [PASSWORD]
 # $6 [DEPLOY KEY]
+# $7 [NPM Option]
 
 # --------------------
 # GET PARAMETERS
@@ -33,6 +34,7 @@ GIT_BRANCH=$3
 BASICAUTH_USERNAME=$4
 BASICAUTH_PASSWORD=$5
 DEPLOY_KEY=$6
+NPM_OTION=$7
 
 
 # --------------------
@@ -47,9 +49,11 @@ DIR_VHOST="/var/www/vhosts/"
 DIR_CURRENT="/var/www/vhosts/EXAMPLE.COM/"
 DIR_NGINX_CONF="/etc/nginx/conf.d/"
 DIR_OWNER="nginx:nginx"
+DIR_WEBROOT="${DIR_VHOST}${SUBDOMAIN}.${MAIN_DOMAIN}"
 WEB_USER="nginx"
 
 # AWS Related Info
+## Make these string null or empty if you don't want to execute Route53 changes
 AWS_HOSTED_ZONE="XXXXXXXXXXX"
 AWS_EIP="XXX.XXX.XXX.XXX"
 
@@ -95,6 +99,7 @@ show_main_menu()
   echo "# PHP Deployment"
   echo "Deploy Git:  ${GIT_DEPLOY_URL}"
   echo "Deploy Key:  ${DEPLOY_KEY}"
+  echo "NPM Option:  ${NPM_OTION}"
   echo " -- -- -- -- -- -- -- -- -- -- --"
   echo "[y]. Proceed?"
   echo "[q]. Quit?"
@@ -112,6 +117,7 @@ do_main_menu()
     case "$yesno" in [yY]*) ;; *) echo "Sorry, see you soon!" ; exit ;; esac
     do_create
     do_route53
+    do_tailwind
     show_wiki
     echo "---------------------------"
     echo "---      Complete!      ---"
@@ -150,7 +156,14 @@ do_create() {
     # STEP 4: Setting up Nginx Config
     echo "**NOW** Setting up Nginx Config"
     sudo sed -i "s/SUBDOMAIN.${MAIN_DOMAIN}/${SUBDOMAIN}.${MAIN_DOMAIN}/g" ${DIR_NGINX_CONF}$(date "+%Y%m%d")_vhost_${SUBDOMAIN}.${MAIN_DOMAIN}.conf
-    
+    ## Add /dist to web root folder for tailwind
+    if [ "${NPM_OTION}" = "tailwind" ]; then
+        echo "**NOW** Setting up Nginx Config for Tailwind"
+        DIR_WEBROOT_TAILWIND="${DIR_WEBROOT}/dist"
+        sudo sed -i "s/${DIR_WEBROOT}/${DIR_WEBROOT_TAILWIND}/g" ${DIR_NGINX_CONF}$(date "+%Y%m%d")_vhost_${SUBDOMAIN}.${MAIN_DOMAIN}.conf
+        DIR_WEBROOT="${DIR_WEBROOT_TAILWIND}"
+    fi
+
     # STEP 5: Restarting Nginx
     echo "**NOW** Restarting Nginx"
     sudo nginx -t
@@ -186,6 +199,9 @@ do_create() {
 # Function: Register subdomain to DNS zone via Route 53
 # --------------------
 do_route53() {
+echo "**NOW** Checking if Route53 parameters are not empty"
+if [ -n "${AWS_HOSTED_ZONE}" ] && [ -n "${AWS_EIP}" ]; then
+echo "**NOW** Creating route53.json file"
 ROUTE53_JSON=$(cat << EOS
 {
     "Comment": "CREATE/DELETE/UPSERT a record ",
@@ -202,9 +218,40 @@ EOS
 )
 cd ${DIR_CURRENT}
 echo ${ROUTE53_JSON} > route53.json
+echo "**NOW** Applying Route53 Change"
 aws route53 change-resource-record-sets --hosted-zone-id ${AWS_HOSTED_ZONE} --change-batch file://route53.json
+else
+  echo "Skipping Route53 Registration"
+fi
 }
 
+# --------------------
+# Function: Install & Build Tailwind CSS
+# --------------------
+do_tailwind(){
+echo "**NOW** Checking if NPM option is tailwind"
+if [ "${NPM_OTION}" = "tailwind" ]; then
+echo "**NOW** Creating post-merge file for Tailwind CSS"
+POST_MERGE=$(cat << EOS
+#!/bin/bash
+cd ${DIR_VHOST}${SUBDOMAIN}.${MAIN_DOMAIN}
+echo 'npm-installing'
+npm install -D
+echo 'npm-building:'
+npm run build
+EOS
+)
+cd ${DIR_CURRENT}
+echo ${POST_MERGE} > post-merge
+echo "**NOW** Copying post-merge file to git hook"
+sudo cp post-merge ${DIR_VHOST}${SUBDOMAIN}.${MAIN_DOMAIN}/.git/hooks/
+sudo chown ${DIR_OWNER} ${DIR_VHOST}${SUBDOMAIN}.${MAIN_DOMAIN}/.git/hooks/post-merge
+echo "**NOW** Execute initial npm build"
+sudo -u ${WEB_USER} sh ${DIR_VHOST}${SUBDOMAIN}.${MAIN_DOMAIN}/.git/hooks/post-merge
+else
+  echo "Skipping Tailwind"
+fi
+}
 
 # --------------------
 # Function: Create Markdown for Wiki
@@ -229,7 +276,8 @@ https://${SUBDOMAIN}.${MAIN_DOMAIN}/
 ----|------
 Git | ${GIT_SSH}
 Branch | ${GIT_BRANCH}
-reset hard | Yes
+Reset hard | Yes
+NPM Option | ${NPM_OTION}
 Deploy script | ${GIT_DEPLOY_URL}
 
 * deploy script does not change branch, you must git checkout on the server directly
