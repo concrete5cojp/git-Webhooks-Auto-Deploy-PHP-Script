@@ -113,7 +113,7 @@ $3  | [BRANCH NAME]   | Branch you want to check out initially | `master`
 $4  | [BASIC AUTH USERNAME] | You deside the Basic Auth ID | `username`
 $5  | [BASIC AUTH PASSWORD] | Generate password of Basic Auth | `password`
 $6  | [DEPLOY KEY]    | Generate random key as additional security measure of deployment | `1234567890abcdefABCDEF`
-$6  | [NPM OPTION]    | Setup and run the tailwind build post-merge | `tailwind`
+$7  | [NPM OPTION]    | Setup and run the tailwind build post-merge | `tailwind`
 
 ```
 Example
