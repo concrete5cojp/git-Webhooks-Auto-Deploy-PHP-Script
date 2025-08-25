@@ -19,6 +19,8 @@ If you want to set-up multiple git deployment environments within a AWS Amazon L
 
 # How to set up the git script `deploy.php`
 
+Note: As of v4.2.0, the script optionally supports Docker-based deployments using docker-compose. See the "Docker-enabled deployments" section below.
+
 How to set-up `deploy.php`.
 
 ## 1. Set up git
@@ -105,15 +107,15 @@ $ sh setting-vhost-route53.sh [SUBDOMAIN] [GIT CLONE URL] [BRANCH NAME] [BASIC A
 
 (If you've changed the filename of shell script as I advised, you must change the command accordingly.)
 
-$   | Option Name     | Description | Example
-----|-----------------|-------------|--------
-$1  | [SUBDOMAIN]     | Set your desired subdomain   | `subdomain`
-$2  | [Git Clone URL] | Enter URL to git clone | `git@github.com:katzueno/git-Webhooks-Auto-Deploy-PHP-Script.git`
-$3  | [BRANCH NAME]   | Branch you want to check out initially | `master`
-$4  | [BASIC AUTH USERNAME] | You deside the Basic Auth ID | `username`
-$5  | [BASIC AUTH PASSWORD] | Generate password of Basic Auth | `password`
-$6  | [DEPLOY KEY]    | Generate random key as additional security measure of deployment | `1234567890abcdefABCDEF`
-$7  | [NPM OPTION]    | Setup and run the tailwind build post-merge | `tailwind`
+| $  | Option Name           | Description                                                      | Example                                                           |
+|----|-----------------------|------------------------------------------------------------------|-------------------------------------------------------------------|
+| $1 | [SUBDOMAIN]           | Set your desired subdomain                                       | `subdomain`                                                       |
+| $2 | [Git Clone URL]       | Enter URL to git clone                                           | `git@github.com:katzueno/git-Webhooks-Auto-Deploy-PHP-Script.git` |
+| $3 | [BRANCH NAME]         | Branch you want to check out initially                           | `master`                                                          |
+| $4 | [BASIC AUTH USERNAME] | You deside the Basic Auth ID                                     | `username`                                                        |
+| $5 | [BASIC AUTH PASSWORD] | Generate password of Basic Auth                                  | `password`                                                        |
+| $6 | [DEPLOY KEY]          | Generate random key as additional security measure of deployment | `1234567890abcdefABCDEF`                                          |
+| $7 | [NPM OPTION]          | Setup and run the tailwind build post-merge                      | `tailwind`                                                        |
 
 ```
 Example
@@ -215,12 +217,15 @@ $options = array(
     'directory'     => '/var/www/vhosts/SUBDOMAIN.example.com', // Enter your server's git repo location
     'work_dir'      => '/var/www/vhosts/SUBDOMAIN.example.com',  // Enter your server's work directory. If you don't separate git and work directories, please leave it empty or false.
     'log'           => '/var/log/gitdeploy/SUBDOMAIN.log', // relative or absolute path where you save log file. Set it to false without quotation mark if you don't need to save log file.
-    'branch'        => 'master', // Indicate which branch you want to checkout
+    'branch'        => 'master', // Or 'main' depending on your repo default branch
     'remote'        => 'origin', // Indicate which remote repo you want to fetch
     'date_format'   => 'Y-m-d H:i:sP',  // Indicate date format of your log file
     'syncSubmodule' => false, // If your repo has submodule, set it true. (haven't tested it if this actually works)
     'reset'         => true, // If you want to git reset --hard every time you deploy, please set it true
     'git_bin_path'  => 'git',
+    // Docker-related options (optional)
+    'docker_enabled' => true, // Set true to enable docker-compose operations after deployment
+    'docker_compose_profile' => 'dev', // Compose profile to use (e.g., 'dev' or 'prod')
 );
 ```
 
@@ -253,14 +258,43 @@ $options = array(
 
 That's it. Now you should be ready to go.
 
+# Docker-enabled deployments
+
+If your repository includes a Docker Compose setup, you can have the deploy script automatically rebuild and restart your containers after a successful git update.
+
+Requirements:
+- docker and docker-compose available to the user running PHP (often the web server user). You may need to allow that user to run docker via group membership or sudoers.
+- A docker-compose.yml in your work_dir. Optionally use Compose profiles.
+
+How it works:
+- After fetch/checkout and optional submodule updates, the script will:
+  - docker-compose down
+  - docker-compose --profile <profile> build --no-cache
+  - docker-compose --profile <profile> up -d
+  - docker ps to log container status
+
+Configuration in deploy.php options:
+- 'docker_enabled' => true to turn on Docker operations.
+- 'docker_compose_profile' => 'dev' (or 'prod') to choose a Compose profile. If you don't use profiles, set any value and ensure the default services are defined.
+
+Security recommendations:
+- Keep deploy.php behind HTTPS and HTTP Basic Auth.
+- Use a long random key in the ?key= parameter and never commit real keys to your repo.
+- The script now uses a timing-safe comparison (hash_equals) and gracefully ignores requests without a key.
+
+Troubleshooting:
+- If Docker commands fail due to permissions, confirm the web server user can run docker. On many systems: add the user to the 'docker' group, then restart the service and re-login.
+- Check the log file defined by the 'log' option for details.
+
 # Version History
 
-Date | Version | Release note
-----|---|-----
-2020/4/24 | 4.1.0    | - Tailwind CSS Build support added<br>- Route53 is now option if you leave AWS parameters blank and added a message
-2020/4/22 | 4.0.1    | Fix wiki output to show git branch properly 
-2020/3/13 | 4.0    | - New shell script <br> The shell script to setup web root document, Nginx config and route53 record<br>- Changed `deployments.php` to `deploy.php` to simplify.
-2019/8/7 | 3.0beta | - Bug fixes<br>- new reset option<br>- new submodule option (not tested, so it's beta) <br>- Comments to describe more detail
+| Date       | Version | Release note                                                                                                                                                                                               |
+|------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2025/08/25 | 4.2.0   | - Optional Docker integration: docker-compose down/build/up and status logging<br>- New options: docker_enabled, docker_compose_profile<br>- Safer key check using hash_equals; minor logging improvements |
+| 2020/4/24  | 4.1.0   | - Tailwind CSS Build support added<br>- Route53 is now option if you leave AWS parameters blank and added a message                                                                                        |
+| 2020/4/22  | 4.0.1   | Fix wiki output to show git branch properly                                                                                                                                                                |
+| 2020/3/13  | 4.0     | - New shell script <br> The shell script to setup web root document, Nginx config and route53 record<br>- Changed `deployments.php` to `deploy.php` to simplify.                                           |
+| 2019/8/7   | 3.0beta | - Bug fixes<br>- new reset option<br>- new submodule option (not tested, so it's beta) <br>- Comments to describe more detail                                                                              |
 
 # Credit
 

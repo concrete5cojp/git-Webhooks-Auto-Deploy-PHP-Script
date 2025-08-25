@@ -7,9 +7,10 @@
  *
  * @access public
  * @author Katz Ueno <katzueno.com>
+ * @author Biplob Hossain <biplob.me>
  * @copyright Katz Ueno
  * @category Deployment
- * @version 4.0.1
+ * @version 4.2.0 - Docker Support
  */
 
 /**
@@ -42,14 +43,17 @@ $options = array(
     'syncSubmodule' => false, // If your repo has submodule, set it true. (haven't tested it if this actually works)
     'reset'         => false, // If you want to git reset --hard every time you deploy, please set it true
     'git_bin_path'  => 'git',
+    // Docker-related options
+    'docker_enabled' => false, // Enable Docker operations after deployment
+    'docker_compose_profile' => 'dev', // Docker Compose profile to use (e.g., dev or prod)
 );
 
 /**
  * Main Section: No need to modify below this line
  */
-if ($_GET['key'] === $secret_key)  {
+if (isset($_GET['key']) && hash_equals($secret_key, (string)$_GET['key']))  {
     $deploy = new Deploy($options);
-	$deploy->execute();
+    $deploy->execute();
     /*
     $deploy->post_deploy = function() use ($deploy) {
       // hit the wp-admin page to update any db changes
@@ -116,6 +120,20 @@ class Deploy {
     private $_topull = false;
 
     /**
+     * Enable Docker operations after git pull
+     *
+     * @var boolean
+     */
+    private $_docker_enabled = false;
+
+    /**
+     * Docker Compose profile to use
+     *
+     * @var string
+     */
+    private $_docker_compose_profile = 'dev';
+
+    /**
     * Sets up defaults.
     * 
     * @param  array   $option       Information about the deployment
@@ -123,7 +141,7 @@ class Deploy {
     public function __construct($options = array())
     {
 
-        $available_options = array('directory', 'work_dir', 'log', 'date_format', 'branch', 'remote', 'syncSubmodule', 'reset', 'git_bin_path');
+        $available_options = array('directory', 'work_dir', 'log', 'date_format', 'branch', 'remote', 'syncSubmodule', 'reset', 'git_bin_path', 'docker_enabled', 'docker_compose_profile');
     
         foreach ($options as $option => $value){
             if (in_array($option, $available_options)) {
@@ -145,6 +163,9 @@ class Deploy {
         $this->log('Attempting deployment...');
         $this->log('Git Directory:' . $this->_directory);
         $this->log('Work Directory:' . $this->_work_dir);
+        if ($this->_docker_enabled) {
+            $this->log('Docker Mode: Enabled (Profile: ' . $this->_docker_compose_profile . ')');
+        }
     }
 
     /**
@@ -170,6 +191,62 @@ class Deploy {
             // Write the message into the log file
             // Format: time --- type: message
             file_put_contents($filename, date($this->_date_format).' --- '.$type.': '.$message.PHP_EOL, FILE_APPEND);
+        }
+    }
+
+    /**
+     * Handle Docker operations after git deployment
+     */
+    private function dockerOperations()
+    {
+        if (!$this->_docker_enabled) {
+            return;
+        }
+
+        try {
+            $this->log('Starting Docker operations...');
+
+            // Stop existing containers
+            $this->log('Stopping existing Docker containers...');
+            exec('cd ' . $this->_work_dir . ' && docker-compose down 2>&1', $output, $return_var);
+            if ($return_var === 0) {
+                $this->log('Docker containers stopped: ' . implode(' ', $output));
+            } else {
+                $this->log('Warning: Error stopping containers: ' . implode(' ', $output), 'WARN');
+            }
+
+            // Rebuild containers (no-cache to ensure fresh build)
+            $this->log('Rebuilding Docker containers...');
+            exec('cd ' . $this->_work_dir . ' && docker-compose --profile ' . $this->_docker_compose_profile . ' build --no-cache 2>&1', $output, $return_var);
+            if ($return_var === 0) {
+                $this->log('Docker containers rebuilt successfully');
+            } else {
+                throw new Exception('Docker build failed: ' . implode(' ', $output));
+            }
+
+            // Start containers
+            $this->log('Starting Docker containers...');
+            exec('cd ' . $this->_work_dir . ' && docker-compose --profile ' . $this->_docker_compose_profile . ' up -d 2>&1', $output, $return_var);
+            if ($return_var === 0) {
+                $this->log('Docker containers started successfully: ' . implode(' ', $output));
+            } else {
+                throw new Exception('Docker startup failed: ' . implode(' ', $output));
+            }
+
+            // Wait a moment for containers to stabilize
+            sleep(5);
+
+            // Check container status
+            exec('cd ' . $this->_work_dir . ' && docker ps --format "table {{.Names}}\t{{.Status}}" 2>&1', $output, $return_var);
+            if ($return_var === 0) {
+                $this->log('Docker container status: ' . implode(' | ', $output));
+            }
+
+            $this->log('Docker operations completed successfully');
+
+        } catch (Exception $e) {
+            $this->log('Docker operations failed: ' . $e->getMessage(), 'ERROR');
+            throw $e;
         }
     }
 
@@ -232,6 +309,11 @@ class Deploy {
                     $output = implode(' ', $output);
                 }
                 $this->log('Updating submodules...'.$output);
+            }
+
+            // Handle Docker operations if enabled
+            if ($this->_docker_enabled) {
+                $this->dockerOperations();
             }
 
             if (is_callable($this->post_deploy)) {
